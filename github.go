@@ -6,8 +6,8 @@ import (
 	"net/http"
 )
 
-func FetchRepoInfo(Repo string) (*RepoInfo, error) {
-	URL := fmt.Sprintf("https://api.github.com/repos/%s", Repo)
+func FetchRepoInfo(repo string) (*RepoInfo, error) {
+	URL := fmt.Sprintf("https://api.github.com/repos/%s", repo)
 	resp, err := http.Get(URL)
 	if err != nil {
 		return nil, err
@@ -19,15 +19,27 @@ func FetchRepoInfo(Repo string) (*RepoInfo, error) {
 		return nil, err
 	}
 
-	//fetch latest commit
-	commitsURL := fmt.Sprintf("https://api.github.com/repos/%s/commits", Repo)
+	// Fetch latest commit
+	commitsURL := fmt.Sprintf("https://api.github.com/repos/%s/commits", repo)
 	commitsResp, err := http.Get(commitsURL)
 	if err != nil {
 		return nil, err
 	}
-	defer commitsResp.Body.Close()	
+	defer commitsResp.Body.Close()
 	var commits []Commit
 	if err := json.NewDecoder(commitsResp.Body).Decode(&commits); err != nil {
 		return nil, err
 	}
+
+	// Optionally print latest commit info
+	if len(commits) > 0 {
+		fmt.Println("Latest Commit:")
+		fmt.Println("SHA:", commits[0].SHA)
+		fmt.Println("Message:", commits[0].Commit.Message)
+		fmt.Println("Author:", commits[0].Commit.Author.Name)
+		fmt.Println("Date:", commits[0].Commit.Author.Date)
+		fmt.Println("URL:", commits[0].HTMLURL)
+	}
+
+	return &info, nil
 }
